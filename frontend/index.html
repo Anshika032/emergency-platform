@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/jpeg" href="./favicon.jpg">
+
+
+  <meta charset="UTF-8" />
+  <title>Emergency SOS Dashboard</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    header {
+      background: linear-gradient(90deg, #1e3a8a, #0ea5e9);
+      padding: 16px 24px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #2563eb;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .secondary {
+      background: #334155;
+    }
+
+    .secondary:hover {
+      background: #475569;
+    }
+
+    #status {
+      margin-top: 8px;
+      color: #22c55e;
+      font-weight: 500;
+    }
+
+    #map {
+      height: 420px;
+      border-radius: 12px;
+      margin: 20px 0;
+      box-shadow: 0 0 15px rgba(0,0,0,0.4);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #020617;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    th {
+      background: #020617;
+      color: #93c5fd;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    tr:nth-child(even) {
+      background: #020617;
+    }
+
+    tr:hover {
+      background: #020617;
+    }
+
+    .severity-high {
+      color: #ef4444;
+      font-weight: bold;
+    }
+
+    .severity-medium {
+      color: #f59e0b;
+      font-weight: bold;
+    }
+
+    .severity-low {
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: linear-gradient(90deg, #020617, #020617);
+  border-bottom: 1px solid #111827;
+  backdrop-filter: blur(6px);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: #22d3ee;
+}
+
+.subtitle {
+  font-size: 11px;
+  color: #94a3b8;
+}
+.status-pill {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(34,197,94,0.1);
+  color: #22c55e;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+#weatherBox {
+  border: 1px solid #111827;
+  background: radial-gradient(circle at top, #020617, #020617);
+}
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px;
+  background: rgba(2,6,23,0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #0f172a;
+}
+
+.nav-left .logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: #22d3ee;
+}
+
+.tagline {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.nav-center span {
+  margin: 0 14px;
+  font-size: 14px;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.nav-center span:hover {
+  color: white;
+}
+
+.nav-right {
+  display: flex;
+  gap: 12px;
+}
+
+.ghost {
+  background: transparent;
+  border: 1px solid #1e293b;
+  color: #e5e7eb;
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+
+.sos-btn {
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.hero {
+  text-align: center;
+  padding: 100px 20px 60px;
+  background: radial-gradient(circle at top, #020617, #020617);
+}
+
+.hero h1 {
+  font-size: 48px;
+  font-weight: 800;
+}
+
+.hero h1 span {
+  color: #22d3ee;
+}
+
+.hero p {
+  color: #94a3b8;
+  max-width: 700px;
+  margin: 16px auto;
+}
+
+.hero-actions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.hero-sos {
+  background: #ef4444;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-weight: 700;
+}
+
+.hero-map {
+  background: transparent;
+  border: 1px solid #22d3ee;
+  color: #22d3ee;
+  padding: 14px 28px;
+  border-radius: 14px;
+}
+
+.pill {
+  display: inline-block;
+  background: rgba(34,197,94,0.15);
+  color: #22c55e;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+.features {
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.features h2 {
+  font-size: 36px;
+  margin-bottom: 40px;
+}
+
+.features span {
+  color: #22d3ee;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.feature {
+  background: #020617;
+  border: 1px solid #111827;
+  padding: 24px;
+  border-radius: 16px;
+  color: #e5e7eb;
+}
+.info-panel {
+  margin: 40px auto 0;
+  max-width: 900px;
+  background: #020617;
+  border: 1px solid #111827;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  transition: all 0.3s ease;
+}
+
+#infoTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #22d3ee;
+}
+
+#infoContent {
+  margin-top: 12px;
+  color: #cbd5f5;
+  line-height: 1.6;
+}
+
+
+  </style>
+</head>
+
+<body>
+
+<header class="nav">
+  <div class="nav-left">
+    <div class="logo">SATLINK</div>
+    <div class="tagline">EMERGENCY RESPONSE</div>
+  </div>
+  <div id="satlinkAlert" style="
+  display:none;
+  position:fixed;
+  top:90px;
+  right:24px;
+  background:#020617;
+  border-left:6px solid #ef4444;
+  padding:16px 20px;
+  color:white;
+  border-radius:12px;
+  box-shadow:0 0 24px rgba(0,0,0,0.7);
+  z-index:9999;
+  max-width:340px;
+">
+  <b id="satlinkAlertTitle">🚨 NEW EMERGENCY</b>
+  <div id="satlinkAlertText"
+       style="margin-top:8px;font-size:14px;line-height:1.5;">
+  </div>
+</div>
+
+
+  <div class="nav-center">
+    <button class="secondary" onclick="soundEnabled = !soundEnabled">
+  🔔 Toggle Sound
+</button>
+
+<button class="secondary" onclick="voiceEnabled = !voiceEnabled">
+  🗣️ Toggle Voice
+</button>
+
+    <span onclick="openMapView()">🗺 Disaster Map</span>
+    <span onclick="openDashboard()">⚠ SOS logs</span>
+    <span onclick="openDashboard()">📊 Dashboard</span>
+    <span onclick="openAbout()">ℹ About</span>
+  </div>
+
+  
+</header>
+<section class="hero">
+  <div class="pill">● System Operational · Satellite Link Active</div>
+
+  <h1>
+    Emergency Response <br />
+    <span>When Networks Fail</span>
+  </h1>
+
+  <p>
+    Satellite-powered emergency intelligence platform.
+    Coordinate rescue operations even in zero-connectivity zones.
+  </p>
+
+  <div class="hero-actions">
+   <button class="sos-btn" onclick="window.location.href='emergency_response.html'">
+  SEND EMERGENCY SOS
+</button>
+
+    
+    <button class="hero-map" onclick="openMapView()">
+      View Disaster Map
+    </button>
+  </div>
+</section>
+
+
+<div class="container">
+  <div class="status-pill">
+  ● System Operational · Satellite Link Active
+</div>
+
+
+  <div class="controls">
+    <button onclick="sendSOS()">🚨 Send Manual SOS</button>
+    
+    <button class="secondary" onclick="manualRefresh()">🔄 Refresh</button>
+    
+    <button class="secondary" onclick="window.open('http://127.0.0.1:8000/export_logs')">
+      
+
+      📄 Download Report
+    </button>
+  </div>
+  <section class="features">
+  <h2>Mission-Critical <span>Technology</span></h2>
+
+  <div class="feature-grid">
+    <div class="feature" onclick="showInfo('satellite')">🛰 Satellite Connectivity</div>
+    <div class="feature" onclick="showInfo('ai')">🧠 AI Debris Detection</div>
+    <div class="feature" onclick="showInfo('map')">🗺 Live Disaster Mapping</div>
+    <div class="feature" onclick="showInfo('sos')">📡 SOS Mesh Network</div>
+    <div class="feature" onclick="showInfo('weather')">🌦 Weather Intelligence</div>
+    <div class="feature" onclick="showInfo('security')">🛡 Government Grade</div>
+  </div>
+  <div id="infoPanel" class="info-panel">
+  <span id="infoTitle">Select a module</span>
+  <p id="infoContent">
+    Click on any technology module to view live operational details.
+  </p>
+</div>
+
+</section>
+
+<div id="weatherBox" style="
+  background: radial-gradient(circle at top, #020617, #020617);
+  padding:14px;
+  border-radius:10px;
+  margin-top:16px;
+  box-shadow:0 0 10px rgba(0,0,0,0.3);
+">
+  🌦️ Loading weather data...
+</div>
+
+  <p id="status"></p>
+
+  <div id="map"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Time (IST)</th>
+        <th>Message</th>
+        <th>Severity</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Image</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="logTable"></tbody>
+  </table>
+
+  <footer>
+    Satellite-backed Emergency Response Platform • Hackathon Prototype
+  </footer>
+
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  let lastProcessedEventId = null;
+let renderedLogIds = new Set();
+
+ let soundEnabled = true;
+let voiceEnabled = true;
+
+const alertBeep = new Audio(
+  "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+);
+alertBeep.volume = 0.8;
+
+let lastFocusedEventTime = null;
+let persistentEmergencyEvent = null;
+let logInterval = null;
+  
+let activeEmergencyId = null;
+let activeEmergencyLatLng = null;
+
+  // NEW
+
+let map = L.map("map"); // NO setView here
+
+function updateWeatherFromMap() {
+  const center = map.getCenter();
+  loadWeather(center.lat, center.lng);
+}
+
+// Update weather when map stops moving
+map.on("moveend", updateWeatherFromMap);
+
+let markers = [];
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "© OpenStreetMap"
+}).addTo(map);
+map.setZoom(12);
+// initial load only
+
+function openDashboard() {
+  document.getElementById("logTable").scrollIntoView({
+    behavior: "smooth"
+  });
+}
+
+
+
+function openAbout() {
+  document.querySelector(".hero").scrollIntoView({
+    behavior: "smooth"
+  });
+}
+function focusLatestSOS() {
+  fetch("http://127.0.0.1:8000/sos_logs")
+    .then(r => r.json())
+    .then(d => {
+      if (!d.length) return;
+      const l = d[d.length - 1];
+      map.setView([l.lat, l.lon], 15);
+    });
+}
+
+function loadWeather(lat, lon) {
+  fetch(`http://127.0.0.1:8000/weather?lat=${lat}&lon=${lon}`)
+    .then(res => res.json())
+    .then(data => {
+
+      let alertColor = "#22c55e";
+      if (data.alert !== "NORMAL") alertColor = "#ef4444";
+
+      document.getElementById("weatherBox").innerHTML = `
+        🌦️ <b>Weather Intelligence (${data.location})</b><br>
+
+        Condition: <b>${data.condition}</b><br>
+        Description: ${data.description}<br>
+        Temperature: ${data.temperature_c} °C<br>
+        Wind Speed: ${data.wind_speed} m/s<br>
+        <span style="color:${alertColor}; font-weight:bold;">
+          Status: ${data.alert}
+        </span>
+      `;
+    })
+    .catch(() => {
+      document.getElementById("weatherBox").innerHTML =
+        "⚠️ Weather service unavailable";
+    });
+}
+
+function sendSOS() {
+  const center = map.getCenter();
+
+  fetch(
+    `http://127.0.0.1:8000/sos?lat=${center.lat}&lon=${center.lng}&msg=Manual SOS Triggered`,
+    { method: "POST" }
+  )
+  .then(() => {
+    document.getElementById("status").innerText = "SOS Sent Successfully";
+    loadLogs();
+  });
+}
+function loadLogs() {
+  fetch("http://127.0.0.1:8000/sos_logs")
+    .then(res => res.json())
+    .then(async data => {
+
+      const table = document.getElementById("logTable");
+      table.innerHTML = "";
+
+      // Clear markers only (do NOT touch map view)
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+
+      if (!data.length) return;
+
+      /* =====================================================
+         ✅ FIND TRUE LATEST EVENT BY TIMESTAMP (CRITICAL)
+         ===================================================== */
+      const latestEvent = data.reduce((latest, current) => {
+        return new Date(current.time) > new Date(latest.time)
+          ? current
+          : latest;
+      });
+
+      const latestLat = latestEvent.lat ?? latestEvent.latitude;
+      const latestLon = latestEvent.lon ?? latestEvent.longitude;
+
+      if (latestLat && latestLon) {
+        const newEventId = `${latestEvent.time}_${latestLat}_${latestLon}`;
+
+        // 🔥 ONLY WHEN A NEW ALERT ARRIVES
+        if (newEventId !== activeEmergencyId) {
+          activeEmergencyId = newEventId;
+          activeEmergencyLatLng = [Number(latestLat), Number(latestLon)];
+          persistentEmergencyEvent = latestEvent;
+
+          /* ==========================
+             🔔 BEEP SOUND
+             ========================== */
+          if (soundEnabled) {
+            alertBeep.currentTime = 0;
+            alertBeep.play().catch(() => {});
+          }
+
+          /* ==========================
+             📍 HUMAN LOCATION NAME
+             ========================== */
+          let locationName;
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latestLat}&lon=${latestLon}`
+            );
+            const geo = await res.json();
+            locationName =
+              geo.address.city ||
+              geo.address.town ||
+              geo.address.village ||
+              geo.display_name;
+          } catch {
+            locationName = `Lat ${Number(latestLat).toFixed(2)}, Lon ${Number(latestLon).toFixed(2)}`;
+          }
+
+          /* ==========================
+             📢 VISUAL NOTIFICATION
+             ========================== */
+          showSatlinkNotification(
+            `<b>${latestEvent.message}</b><br>
+             Severity: <b>${latestEvent.severity}</b><br>
+             📍 ${locationName}`,
+            latestEvent.severity
+          );
+
+          /* ==========================
+             🗣️ VOICE ANNOUNCEMENT
+             ========================== */
+          speakAlert(
+            `Emergency alert received. 
+             ${latestEvent.severity} severity. 
+             ${latestEvent.message}. 
+             Location ${locationName}.`
+          );
+
+          /* ==========================
+             🗺️ MAP FOCUS (ONCE)
+             ========================== */
+          map.setView(activeEmergencyLatLng, 15, { animate: true });
+        }
+      }
+
+      /* =====================================================
+         TABLE + MARKERS (NO MAP MOVEMENT HERE)
+         ===================================================== */
+      const logsForTable = [...data].sort(
+        (a, b) => new Date(b.time) - new Date(a.time)
+      );
+
+      logsForTable.forEach(log => {
+
+        const lat = log.lat ?? log.latitude ?? null;
+        const lon = log.lon ?? log.longitude ?? null;
+
+        let color = "green";
+        let severityClass = "severity-low";
+
+        if (log.severity === "HIGH") {
+          color = "red";
+          severityClass = "severity-high";
+        } else if (log.severity === "MEDIUM") {
+          color = "orange";
+          severityClass = "severity-medium";
+        }
+
+        const imageCell = log.image
+          ? `<img src="http://127.0.0.1:8000/ai-images/${log.image}"
+                   style="width:60px;height:40px;border-radius:6px;border:2px solid ${color};cursor:pointer"
+                   onclick="window.open(this.src,'_blank')"/>`
+          : "-";
+
+        table.insertAdjacentHTML("beforeend", `
+          <tr>
+            <td>${log.time}</td>
+            <td>${log.message}</td>
+            <td class="${severityClass}">${log.severity}</td>
+            <td>${lat ? Number(lat).toFixed(4) : "-"}</td>
+            <td>${lon ? Number(lon).toFixed(4) : "-"}</td>
+            <td>${imageCell}</td>
+            <td>${log.transport || "-"}</td>
+          </tr>
+        `);
+
+        if (lat && lon) {
+          const marker = L.circleMarker([lat, lon], {
+            radius: 8,
+            color,
+            fillOpacity: 0.9
+          })
+          .addTo(map)
+          .bindPopup(`
+            <b>${log.source === "AI-CAMERA" ? "AI ALERT" : "SOS ALERT"}</b><br>
+            Severity: ${log.severity}<br>
+            ${log.message}<br>
+            ${log.time}
+          `);
+
+          markers.push(marker);
+        }
+      });
+
+      renderPersistentEmergency();
+    })
+    .catch(err => console.error("SOS log load error:", err));
+}
+
+function renderPersistentEmergency() {
+  if (!persistentEmergencyEvent) return;
+
+  const e = persistentEmergencyEvent;
+  const panel = document.getElementById("infoPanel");
+
+  panel.style.border = "2px solid #22c55e";
+  panel.style.background = "rgba(34,197,94,0.08)";
+
+  document.getElementById("infoTitle").innerText =
+    e.source === "AI-CAMERA"
+      ? "🚨 AI EMERGENCY DETECTED"
+      : "🚨 SOS SIGNAL RECEIVED";
+
+  document.getElementById("infoContent").innerHTML = `
+    <b>Message:</b> ${e.message}<br>
+    <b>Severity:</b> ${e.severity}<br>
+    <b>Location:</b> ${(e.lat ?? e.latitude).toFixed(4)}, ${(e.lon ?? e.longitude).toFixed(4)}<br>
+    <b>Time:</b> ${e.time}<br>
+    <b>Source:</b> ${e.source || "MANUAL"}
+  `;
+}
+
+
+
+function openMapView() {
+  document.getElementById("map").scrollIntoView({
+    behavior: "smooth"
+  });
+
+  if (activeEmergencyLatLng) {
+    map.setView(activeEmergencyLatLng, 15, { animate: true });
+  }
+
+  map.setZoom(13);
+}
+
+function manualRefresh() {
+  const btn = event.target;
+  const originalText = btn.innerText;
+
+  btn.innerText = "⏳ Refreshing...";
+  btn.disabled = true;
+
+  loadLogs();
+
+  if (activeEmergencyLatLng) {
+    loadWeather(activeEmergencyLatLng[0], activeEmergencyLatLng[1]);
+  } else {
+    const c = map.getCenter();
+    loadWeather(c.lat, c.lng);
+  }
+
+  setTimeout(() => {
+    btn.innerText = originalText;
+    btn.disabled = false;
+  }, 800);
+}
+
+// function openEmergencySOS() {
+//   document.getElementById("sosSection").style.display = "block";
+
+//   // Optional: auto-fetch latest emergency event later
+// }
+// function closeEmergencySOS() {
+//   document.getElementById("sosSection").style.display = "none";
+// }
+function showEmergencyResponse() {
+  fetch("http://127.0.0.1:8000/sos_logs")
+    .then(res => res.json())
+    .then(logs => {
+      const aiLogs = logs.filter(log => log.source === "AI-CAMERA");
+
+      const table = document.getElementById("emergencyResponseTable");
+      table.innerHTML = "";
+
+      aiLogs.forEach(log => {
+        table.innerHTML += `
+          <tr>
+            <td>${log.time}</td>
+            <td>${log.message}</td>
+            <td>${log.severity}</td>
+            <td>${(log.lat ?? log.latitude) ? Number(log.lat ?? log.latitude).toFixed(4) : "-"}</td>
+            <td>${(log.lon ?? log.longitude) ? Number(log.lon ?? log.longitude).toFixed(4) : "-"}</td>
+
+          </tr>
+        `;
+      });
+
+      document.getElementById("emergencyResponseSection").style.display = "block";
+    });
+}
+
+function showInfo(type) {
+  const title = document.getElementById("infoTitle");
+  const content = document.getElementById("infoContent");
+
+  const center = map.getCenter();
+
+  switch (type) {
+    case "satellite":
+      title.innerText = "🛰 Satellite Connectivity";
+      content.innerHTML = `
+        Satellite uplink is <b>ACTIVE</b> for the current operational area.<br>
+        Coordinates: ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}<br>
+        This ensures SOS delivery even without cellular or internet coverage.
+      `;
+      break;
+
+    case "ai":
+      title.innerText = "🧠 AI Debris Detection";
+      content.innerHTML = `
+        AI analysis module is in <b>standby mode</b>.<br>
+        Currently using manual SOS inputs.<br>
+        <i>Future upgrade:</i> Camera & satellite imagery will auto-detect
+        blocked roads and structural damage.
+      `;
+      break;
+
+    case "map":
+      title.innerText = "🗺 Live Disaster Mapping";
+      content.innerHTML = `
+        Map is tracking SOS activity in real time.<br>
+        Active view centered at:<br>
+        <b>${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}</b><br>
+        Markers update automatically as new SOS signals arrive.
+      `;
+      map.setView(center, 13);
+      break;
+
+    case "sos":
+      title.innerText = "📡 SOS Mesh Network";
+      content.innerHTML = `
+        SOS mesh routing is <b>ACTIVE</b>.<br>
+        Latest SOS is routed through simulated satellite links.<br>
+        Redundant paths ensure delivery even during partial link failure.
+      `;
+      break;
+
+    case "weather":
+      title.innerText = "🌦 Weather Intelligence";
+      content.innerHTML = `
+        Weather intelligence is fetched based on map location.<br>
+        Data updates automatically when the operational area changes.<br>
+        This helps responders anticipate weather-related risks.
+      `;
+      break;
+
+    case "security":
+      title.innerText = "🛡 Government Grade Security";
+      content.innerHTML = `
+        All SOS data is logged with timestamps and coordinates.<br>
+        Designed to meet government and disaster-response audit needs.<br>
+        No personal data stored beyond operational requirements.
+      `;
+      break;
+  }
+
+  // Smooth scroll to panel
+  document.getElementById("infoPanel").scrollIntoView({
+    behavior: "smooth"
+  });
+}
+
+
+function speakAlert(text) {
+  if (!voiceEnabled) return;
+  if (!("speechSynthesis" in window)) return;
+
+  speechSynthesis.cancel();
+
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.rate = 0.95;
+  msg.pitch = 1.05;
+  msg.volume = 1;
+
+  speechSynthesis.speak(msg);
+}
+function showSatlinkNotification(message, severity) {
+  const box = document.getElementById("satlinkAlert");
+  const text = document.getElementById("satlinkAlertText");
+
+  box.style.borderLeftColor =
+    severity === "HIGH" ? "#ef4444" :
+    severity === "MEDIUM" ? "#f59e0b" :
+    "#22c55e";
+
+  text.innerHTML = message;
+  box.style.display = "block";
+
+  setTimeout(() => {
+    box.style.display = "none";
+  }, 7000);
+}
+async function resolveLocationName(lat, lon) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+    );
+    const data = await res.json();
+    return data.address.city ||
+           data.address.town ||
+           data.address.village ||
+           data.display_name;
+  } catch {
+    return `Latitude ${lat.toFixed(2)}, Longitude ${lon.toFixed(2)}`;
+  }
+}
+
+
+loadLogs();
+setInterval(loadLogs, 8000);
+updateWeatherFromMap();
+
+
+</script>
+
+</body>
+</html>

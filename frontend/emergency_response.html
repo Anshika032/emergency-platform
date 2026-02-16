@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Emergency SOS</title>
+  <link rel="icon" type="image/jpeg" href="./favicon.jpg">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #020617, #020617);
+      color: #e5e7eb;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: rgba(2,6,23,0.9);
+      border-bottom: 1px solid #0f172a;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: #22d3ee;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 60px auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: rgba(34,197,94,0.15);
+      color: #22c55e;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .sos-circle {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: #22c55e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: bold;
+      margin: 30px auto;
+      cursor: pointer;
+      transition: 0.4s;
+      box-shadow: 0 0 40px rgba(34,197,94,0.4);
+    }
+
+    .sos-circle.yellow {
+      background: #f59e0b;
+      box-shadow: 0 0 40px rgba(245,158,11,0.5);
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 30px;
+    }
+
+    .info-box {
+      text-align: center;
+    }
+
+    .info-box span {
+      display: block;
+      margin-top: 8px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .location-box {
+      margin-top: 30px;
+      background: #020617;
+      border: 1px solid #111827;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .success-box {
+      margin-top: 30px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid #22c55e;
+      border-radius: 16px;
+      padding: 24px;
+      display: none;
+    }
+
+    .contacts {
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+      gap: 16px;
+    }
+
+    .contact {
+      background: #020617;
+      border: 1px solid #111827;
+      border-radius: 14px;
+      padding: 18px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="nav">
+  <div class="logo">SATLINK · EMERGENCY</div>
+  <button onclick="history.back()">⬅ Back</button>
+</div>
+
+<div class="container">
+
+  <div id="pill" class="status-pill">
+    ● Emergency Signal Delivered
+  </div>
+
+  <h1>Emergency SOS</h1>
+  <p>Your signal will be transmitted via satellite</p>
+
+  <div id="sosBtn" class="sos-circle" onclick="triggerSOS()">
+    ✔
+  </div>
+
+  <div class="info-row">
+    <div class="info-box">📍<span>GPS Lock</span></div>
+    <div class="info-box">🛰<span>Satellite Link</span></div>
+    <div class="info-box">✔<span>Delivered</span></div>
+  </div>
+
+  <div id="locationBox" class="location-box">
+    Location: <b id="coords">Fetching…</b>
+  </div>
+
+  <div id="successBox" class="success-box">
+    <h2>✅ SOS Signal Received</h2>
+    <p>Emergency responders have been notified. Stay where you are.</p>
+  </div>
+
+  <div class="contacts">
+    <div class="contact">📞 National Emergency<br><b>112</b></div>
+    <div class="contact">🚨 Disaster Response<br><b>1070</b></div>
+    <div class="contact">🚑 Medical Emergency<br><b>108</b></div>
+  </div>
+
+</div>
+
+<script>
+  
+let sent = false;
+
+function triggerSOS() {
+  if (sent) return;
+
+  sent = true;
+
+  const btn = document.getElementById("sosBtn");
+  btn.classList.add("yellow");
+  btn.innerText = "SOS";
+
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude.toFixed(4);
+    const lon = pos.coords.longitude.toFixed(4);
+    document.getElementById("coords").innerText = `${lat}, ${lon}`;
+
+    fetch(`http://127.0.0.1:8000/sos?lat=${lat}&lon=${lon}&msg=Manual SOS Triggered`, {
+      method: "POST"
+    }).then(() => {
+      document.getElementById("pill").innerText = "● SOS Signal Transmitted";
+      document.getElementById("successBox").style.display = "block";
+    });
+  });
+}
+</script>
+
+</body>
+</html>
