@@ -1,4 +1,4 @@
-🚀 Emergency Platform – AI Powered Disaster Response System
+🚀 SatLink — Edge-AI Emergency Response Platform | Python – AI-Powered Disaster Response System
 
 An intelligent emergency response and satellite communication platform
 designed to detect disasters using AI and instantly trigger SOS alerts
